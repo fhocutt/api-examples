@@ -55,29 +55,32 @@ def parseplantings(cropinfo):
 
     cropinfo - a dict from the API's json output
     """
-    planting_info = {}
+    planting_info = {"sunniness":{}, "planted_from":{}}
     plantings_count = cropinfo["plantings_count"]
     for item in cropinfo["plantings"]:
-        conditions = (item["planted_from"], item["sunniness"])
-        if conditions in planting_info:
-            planting_info[conditions] += 1
+        if item["sunniness"] in planting_info and item["sunniness"]:
+            planting_info["sunniness"][item["planted_from"]] += 1
         else:
-            planting_info[conditions] = 1
+            planting_info["sunniness"][item["planted_from"]] = 1
+        if item["planted_from"] in planting_info:
+            planting_info["planted_from"][item["planted_from"]] += 1
+        else:
+            planting_info["planted_from"][item["planted_from"]] = 1
     return (planting_info, plantings_count)
 
-def mostplantings(planting_info):
-    """Returns a tuple with the most frequent conditions:
-       (planted_from, sunniness)."""
-    v = list(planting_info.values())
-    k = list(planting_info.keys())
+def mostplantings(planting_dict):
+    """Returns the value with the highest key."""
+    v = list(planting_dict.values())
+    k = list(planting_dict.keys())
     return k[v.index(max(v))]
 
 def run():
     crop = raw_input("What would you like to plant?\n")
     cropinfo = getcropinfo(crop)
-    planting_info, plantings_count = parseplantings(cropinfo)
+    planting_info, plantings_count = parseplantings(cropinfo) #something around here is buggy
     if plantings_count > 0:
-        planted_from, sunniness = mostplantings(planting_info)
+        planted_from = mostplantings(planting_info["planted_from"]) #probably something in here?
+        sunniness = mostplantings(planting_info["sunniness"])
         print "%s was planted %s times." % (crop, plantings_count)
         print "It was most often planted from %s in %s." % (planted_from, 
                                                             sunniness)
@@ -97,4 +100,3 @@ def test(crop, cropinfo):
                                                             sunniness)
     else:
         print "%s has not been planted yet." % crop
-
